@@ -1,5 +1,16 @@
 ﻿
 
+//                           До рефакторинга  // Parallel + AsSpan // AsSpan (Parallel в Rating)
+//links_IMDB_MovieLens:      00:00:00.4315613 // 00:00:00.0826156  // 00:00:00.0800730
+//TagCodes_MovieLens:        00:00:00.0020740 // 00:00:00.0123031  // 00:00:00.0017357
+//Ratings_IMDB:              00:00:04.0039178 // 00:00:01.0276114  // 00:00:01.2489364
+//MovieCodes_IMDB:           00:00:08.8379080 // 00:00:15.1513265  // 00:00:04.7125392
+//TagScores_MovieLens:       00:01:06.2264605 // 00:03:32.8199461  // 00:00:18.9300531
+//ActorsDirectorsNames_IMDB: 00:01:20.6478404 // 00:04:54.0480671  // 00:00:33.9521709
+//ActorsDirectorsCodes_IMDB: 00:01:08.4717690 // 00:09:35.3564674  // 00:00:28.1936335
+
+
+
 
 
 Dictionary<string, string> code_movie = new Dictionary<string, string>();                                // код фильма - название фильма
@@ -17,6 +28,10 @@ Dictionary<string, HashSet<string>> tag_movies = new Dictionary<string, HashSet<
 Dictionary<string, Films_2._2.Movie> name_movie = new Dictionary<string, Films_2._2.Movie>();                        // название фильма - объект класса фильм
 Dictionary<string, HashSet<Films_2._2.Movie>> actors_directors_names_movies = new Dictionary<string, HashSet<Films_2._2.Movie>>();
 Dictionary<string, HashSet<Films_2._2.Movie>> tags_movies = new Dictionary<string, HashSet<Films_2._2.Movie>>();
+
+
+
+
 
 #region
 
@@ -58,19 +73,19 @@ Task dict_name_movie = Task.WhenAll(predecessors).ContinueWith(t
 //  Make_tags_movies_dict());
 
 
-//dict_name_movie.Wait();
+dict_name_movie.Wait();
 
-Task write_ans = dict_name_movie.ContinueWith(t =>
-{
-    foreach (var m in name_movie)
-    {
-        Console.WriteLine(m.Key);
-        Films_2._2.Movie.PrintMovie(m.Value);
-    }
+//Task write_ans = dict_name_movie.ContinueWith(t =>
+//{
+//    foreach (var m in name_movie)
+//    {
+//        Console.WriteLine(m.Key);
+//        Films_2._2.Movie.PrintMovie(m.Value);
+//    }
 
-});
+//});
 
-write_ans.Wait();
+//write_ans.Wait();
 #endregion
 
 
@@ -78,6 +93,11 @@ write_ans.Wait();
 //Read_ActorsDirectorsNames_IMDB();
 //Read_MovieCodes_IMDB();
 //Read_TagCodes_MovieLens();
+//Read_TagScores_MovieLens();
+//Read_ActorsDirectorsCodes_IMDB();
+//Read_Ratings_IMDB();
+
+Console.WriteLine("OK");
 
 // Последовательности:
 
@@ -91,6 +111,8 @@ write_ans.Wait();
 
 Dictionary<string, Films_2._2.Movie> Make_name_movie_dict()
 {
+    Console.WriteLine("Make_name_movie_dict");
+
     foreach (var m in code_movie)
     {
         string id = m.Key;
@@ -160,17 +182,74 @@ Dictionary<string, HashSet<Films_2._2.Movie>> Make_tags_movies_dict()
 //для каждого фильма получила наборы актёров и режиссёров (код - имена)
 void Read_ActorsDirectorsCodes_IMDB()
 {
+    //tt0000001 (index)  2 (index2)  nm0005690 (index) director {index2) \N  \N
+
+    //Console.WriteLine("ActorsDirectorsCodes_IMDB");
+
+    System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+    sw.Start();
+
+    #region
+    //var all_lines = File.ReadAllLines
+    //    (@"C:\Users\HP\Desktop\Фильмы\ml-latest\ActorsDirectorsCodes_IMDB.tsv").Skip(1);
+    //Parallel.ForEach(all_lines, line =>
+    //{
+    //    //Console.WriteLine(line);
+    //    var line_span = line.AsSpan();
+
+    //    int index = line_span.IndexOf('\t');
+    //    string id_movie = line_span.Slice(0, index).ToString();
+
+    //    int index2 = line_span.Slice(index + 1).IndexOf('\t');
+    //    index = line_span.Slice(index2 + 1).IndexOf('\t');
+    //    string id_person = line_span.Slice(index2, index).ToString();
+
+    //    index2 = line_span.Slice(index + 1).IndexOf('\t');
+    //    string job = line_span.Slice(index, index2).ToString();
+
+
+    //    if (code_movie.ContainsKey(id_movie) && personCode_name.ContainsKey(id_person))
+    //    {
+    //        if (job == "director")
+    //        {
+    //            if (!movieCode_directors.ContainsKey(id_movie))
+    //            {
+    //                movieCode_directors.Add(id_movie, new HashSet<string>());
+    //            }
+    //            movieCode_directors[id_movie].Add(personCode_name[id_person]);
+    //        }
+    //        else if (job == "actor")
+    //        {
+    //            if (!movieCode_actors.ContainsKey(id_movie))
+    //            {
+    //                movieCode_actors.Add(id_movie, new HashSet<string>());
+    //            }
+    //            movieCode_actors[id_movie].Add(personCode_name[id_person]);
+    //        }
+    //    }
+    //});
+    #endregion
+
+    #region
     using (StreamReader sr = new StreamReader(@"C:\Users\HP\Desktop\Фильмы\ml-latest\ActorsDirectorsCodes_IMDB.tsv"))
     {
-        Console.WriteLine("ActorsDirectorsCodes_IMDB");
+        //Console.WriteLine("ActorsDirectorsCodes_IMDB");
 
         string line = sr.ReadLine();
+
         while ((line = sr.ReadLine()) != null)
         {
-            string[] row = line.Split('\t');
-            string id_movie = row[0];
-            string id_person = row[2];
-            string job = row[3];
+            var line_span = line.AsSpan();
+
+            int index = line_span.IndexOf('\t');
+            string id_movie = line_span.Slice(0, index).ToString();
+
+            int index2 = line_span.Slice(index + 1).IndexOf('\t');
+            index = line_span.Slice(index2 + 1).IndexOf('\t');
+            string id_person = line_span.Slice(index2, index).ToString();
+
+            index2 = line_span.Slice(index + 1).IndexOf('\t');
+            string job = line_span.Slice(index, index2).ToString();
 
             if (code_movie.ContainsKey(id_movie) && personCode_name.ContainsKey(id_person))
             {
@@ -182,7 +261,7 @@ void Read_ActorsDirectorsCodes_IMDB()
                     }
                     movieCode_directors[id_movie].Add(personCode_name[id_person]);
                 }
-                else if (row[3] == "actor")
+                else if (job == "actor")
                 {
                     if (!movieCode_actors.ContainsKey(id_movie))
                     {
@@ -194,6 +273,10 @@ void Read_ActorsDirectorsCodes_IMDB()
             //Console.WriteLine(line);
         }
     }
+    #endregion
+
+    sw.Stop();
+    Console.WriteLine($"ActorsDirectorsCodes_IMDB: {sw.Elapsed}");
 }
 
 
@@ -201,23 +284,81 @@ void Read_ActorsDirectorsCodes_IMDB()
 //для каждого актёра и режиссёра  сопоставила код и имя
 void Read_ActorsDirectorsNames_IMDB()
 {
+    // nm0000002 (index)	Lauren Bacall (index2)	1924	(index) 2014	(index2) actress,soundtrack 	(index)   tt0117057,tt0037382,tt0038355,tt0071877
+
+    //Console.WriteLine("ActorsDirectorsNames_IMDB");
+
+    System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+    sw.Start();
+
+    #region
+    //var all_lines = File.ReadAllLines
+    //    (@"C:\Users\HP\Desktop\Фильмы\ml-latest\ActorsDirectorsNames_IMDB.txt").Skip(1);
+    //Parallel.ForEach(all_lines, line =>
+    //{
+    //    //Console.WriteLine(line);
+    //    var line_span = line.AsSpan();
+
+    //    int index = line_span.IndexOf('\t');
+    //    string id = line_span.Slice(0, index).ToString();
+
+    //    int index2 = line_span.Slice(index + 1).IndexOf('\t');
+    //    string name = line_span.Slice(index, index2).ToString();
+
+    //    index = line_span.Slice(index2 + 1).IndexOf('\t');
+    //    index2 = line_span.Slice(index + 1).IndexOf('\t');
+
+    //    index = line_span.Slice(index2 + 1).IndexOf('\t');
+    //    List<string> jobs = new List<string>();
+    //    jobs.AddRange(line_span.Slice(index2, index).ToString().Split(','));
+
+    //    List<string> moviesCodes = new List<string>();
+    //    moviesCodes.AddRange(line_span.Slice(index + 1).ToString().Split(','));
+
+    //    List<string> moviesNames = new List<string>();
+
+    //    foreach (string id_m in moviesCodes)
+    //    {
+    //        if (code_movie.ContainsKey(id_m))
+    //        {
+    //            moviesNames.Add(code_movie[id_m]);
+    //        }
+    //    }
+
+    //    if (jobs.Contains("actor") || jobs.Contains("actress") || jobs.Contains("director"))
+    //    {
+    //        personCode_movies.Add(id, moviesNames);
+    //        personCode_name.Add(id, name);
+    //    }
+
+    //});
+    #endregion
+
+    #region
     using (StreamReader sr = new StreamReader(@"C:\Users\HP\Desktop\Фильмы\ml-latest\ActorsDirectorsNames_IMDB.txt"))
     {
-        Console.WriteLine("ActorsDirectorsNames_IMDB");
+        //Console.WriteLine("ActorsDirectorsNames_IMDB");
         string line = sr.ReadLine();
 
         while ((line = sr.ReadLine()) != null)
         {
-            string[] row = line.Split('\t');
+            var line_span = line.AsSpan();
 
-            string id = row[0];
-            string name = row[1];
+            int index = line_span.IndexOf('\t');
+            string id = line_span.Slice(0, index).ToString();
 
-            List<string> job = new List<string>();
-            job.AddRange(row[4].Split(','));
+            int index2 = line_span.Slice(index + 1).IndexOf('\t');
+            string name = line_span.Slice(index, index2).ToString();
+
+            index = line_span.Slice(index2 + 1).IndexOf('\t');
+            index2 = line_span.Slice(index + 1).IndexOf('\t');
+
+            index = line_span.Slice(index2 + 1).IndexOf('\t');
+            List<string> jobs = new List<string>();
+            jobs.AddRange(line_span.Slice(index2, index).ToString().Split(','));
 
             List<string> moviesCodes = new List<string>();
-            moviesCodes.AddRange(row[5].Split(','));
+            moviesCodes.AddRange(line_span.Slice(index + 1).ToString().Split(','));
 
             List<string> moviesNames = new List<string>();
 
@@ -229,7 +370,7 @@ void Read_ActorsDirectorsNames_IMDB()
                 }
             }
 
-            if (job.Contains("actor") || job.Contains("actress") || job.Contains("director"))
+            if (jobs.Contains("actor") || jobs.Contains("actress") || jobs.Contains("director"))
             {
                 personCode_movies.Add(id, moviesNames);
                 personCode_name.Add(id, name);
@@ -238,50 +379,131 @@ void Read_ActorsDirectorsNames_IMDB()
             //Console.WriteLine(line);
         }
     }
+
+    #endregion
+
+    sw.Stop();
+    Console.WriteLine($"ActorsDirectorsNames_IMDB: {sw.Elapsed}");
 }
 
 
 //для каждого фильма сопоставила код imdb и код movielens
 void Read_links_IMDB_MovieLens()
 {
+    // 1,0114709,862
+
+    System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+    sw.Start();
+
+    #region
+    //Console.WriteLine("links_IMDB_MovieLens");
+
+    //var all_lines = File.ReadAllLines
+    //    (@"C:\Users\HP\Desktop\Фильмы\ml-latest\links_IMDB_MovieLens.csv").Skip(1);
+    //Parallel.ForEach(all_lines, line =>
+    //{
+    //    var line_span = line.AsSpan();
+    //    int index = line_span.IndexOf(',');
+    //    string movielens = line_span.Slice(0, index).ToString();
+
+    //    int index2 = line_span.Slice(index + 1).IndexOf(',');
+    //    string imdb = line_span.Slice(index + 1, index2).ToString();
+
+    //    movielens_imdb.Add(movielens, "tt" + imdb);
+    //});
+    #endregion
+
+    #region
     using (StreamReader sr = new StreamReader(@"C:\Users\HP\Desktop\Фильмы\ml-latest\links_IMDB_MovieLens.csv"))
     {
-        Console.WriteLine("links_IMDB_MovieLens");
+        //Console.WriteLine("links_IMDB_MovieLens");
         string line = sr.ReadLine();
         //Console.WriteLine(line);
 
         while ((line = sr.ReadLine()) != null)
         {
-            string[] row = line.Split(',');
-            string movielens = row[0];
-            string imdb = row[1];
+            var line_span = line.AsSpan();
+            int index = line_span.IndexOf(',');
+            string movielens = line_span.Slice(0, index).ToString();
+
+            int index2 = line_span.Slice(index + 1).IndexOf(',');
+            string imdb = line_span.Slice(index + 1, index2).ToString();
 
             movielens_imdb.Add(movielens, "tt" + imdb);
             //Console.WriteLine(line);
         }
     }
+
+    #endregion
+
+    sw.Stop();
+    Console.WriteLine($"links_IMDB_MovieLens: {sw.Elapsed}");
 }
 
 
 //для каждого фильма сопоставила код IMDB и название
 void Read_MovieCodes_IMDB()
 {
+    // tt0000001 (index)	1 (index2)	Carmencita - spanyol tánc (index)	HU (index2)	\N	imdbDisplay	\N	0
+
+    //Console.WriteLine("MovieCodes_IMDB");
+
+    System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+    sw.Start();
+
+    #region
+    //var all_lines = File.ReadAllLines
+    //    (@"C:\Users\HP\Desktop\Фильмы\ml-latest\MovieCodes_IMDB.tsv").Skip(1);
+    //Parallel.ForEach(all_lines, line =>
+    //{
+    //    //Console.WriteLine(line);
+
+    //    var line_span = line.AsSpan();
+    //    int index = line_span.IndexOf('\t');
+    //    string id = line_span.Slice(0, index).ToString();
+
+    //    int index2 = line_span.Slice(index + 1).IndexOf('\t');
+    //    index = line_span.Slice(index2 + 1).IndexOf('\t');
+    //    string name = line_span.Slice(index2, index).ToString();
+
+    //    index2 = line_span.Slice(index + 1).IndexOf('\t');
+    //    string lang = line_span.Slice(index, index2).ToString();
+
+    //    if (lang == "US" || lang == "RU")
+    //    {
+    //        if (!code_movie.ContainsKey(id))
+    //        {
+    //            code_movie.Add(id, name);
+    //            //Console.WriteLine(line);
+    //        }
+    //    }
+    //});
+    #endregion
+
+    #region
+
     using (StreamReader sr = new StreamReader(@"C:\Users\HP\Desktop\Фильмы\ml-latest\MovieCodes_IMDB.tsv"))
     {
-        Console.WriteLine("MovieCodes_IMDB");
+        //Console.WriteLine("MovieCodes_IMDB");
         string line = sr.ReadLine();
 
         while ((line = sr.ReadLine()) != null)
         {
 
-            string[] row = line.Split('\t');
-            string lang = row[3];
-            string id = row[0];
-            string name = row[2];
+            var line_span = line.AsSpan();
+            int index = line_span.IndexOf('\t');
+            string id = line_span.Slice(0, index).ToString();
+
+            int index2 = line_span.Slice(index + 1).IndexOf('\t');
+            index = line_span.Slice(index2 + 1).IndexOf('\t');
+            string name = line_span.Slice(index2, index).ToString();
+
+            index2 = line_span.Slice(index + 1).IndexOf('\t');
+            string lang = line_span.Slice(index, index2).ToString();
 
             if (lang == "US" || lang == "RU")
             {
-                if (!code_movie.ContainsKey(row[0]))
+                if (!code_movie.ContainsKey(id))
                 {
                     code_movie.Add(id, name);
                     //Console.WriteLine(line);
@@ -289,45 +511,107 @@ void Read_MovieCodes_IMDB()
             }
         }
     }
+
+    #endregion
+
+
+    sw.Stop();
+    Console.WriteLine($"MovieCodes_IMDB: {sw.Elapsed}");
 }
 
 
 //для каждого фильма нашла рейтинг (код - рейтинг)
 void Read_Ratings_IMDB()
 {
-    using (StreamReader sr = new StreamReader(@"C:\Users\HP\Desktop\Фильмы\ml-latest\Ratings_IMDB.tsv"))
+    // tt0000001 (index)	5.8	1435
+
+    //Console.WriteLine("Ratings_IMDB");
+
+    System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+    sw.Start();
+
+    var all_lines = File.ReadAllLines
+        (@"C:\Users\HP\Desktop\Фильмы\ml-latest\Ratings_IMDB.tsv").Skip(1);
+    Parallel.ForEach(all_lines, line =>
     {
-        Console.WriteLine("Ratings_IMDB");
-        string line = sr.ReadLine();
+        var line_span = line.AsSpan();
+        int index = line_span.IndexOf('\t');
+        string id = line_span.Slice(0, index).ToString();
 
-        while ((line = sr.ReadLine()) != null)
-        {
-            string[] row = line.Split('\t');
-            string id = row[0];
-            string rate = row[1];
+        int index2 = line_span.Slice(index + 1).IndexOf('\t');
+        string rate = line_span.Slice(index, index2).ToString();
+    });
 
-            movieCode_rating.Add(id, rate);
-            //Console.WriteLine(line);
-        }
-    }
+    #region
+
+    //using (StreamReader sr = new StreamReader(@"C:\Users\HP\Desktop\Фильмы\ml-latest\Ratings_IMDB.tsv"))
+    //{
+    //    //Console.WriteLine("Ratings_IMDB");
+    //    string line = sr.ReadLine();
+
+    //    while ((line = sr.ReadLine()) != null)
+    //    {
+    //        string[] row = line.Split('\t');
+    //        string id = row[0];
+    //        string rate = row[1];
+
+    //        movieCode_rating.Add(id, rate);
+    //        //Console.WriteLine(line);
+    //    }
+    //}
+    #endregion
+
+    sw.Stop();
+    Console.WriteLine($"Ratings_IMDB: {sw.Elapsed}");
 }
 
 
 //для каждого тега сопоставила код и сам тег
 void Read_TagCodes_MovieLens()
 {
+    // 1,007
+
+    //Console.WriteLine("TagCodes_MovieLens");
+
+    System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+    sw.Start();
+
+    #region
+    //var all_lines = File.ReadAllLines
+    //    (@"C:\Users\HP\Desktop\Фильмы\ml-latest\TagCodes_MovieLens.csv").Skip(1);
+    //Parallel.ForEach(all_lines, line =>
+    //{
+    //    var line_span = line.AsSpan();
+    //    int index = line_span.IndexOf(',');
+
+    //    string id = line_span.Slice(0, index).ToString();
+    //    string tag = line_span.Slice(index + 1).ToString();
+
+    //    code_tag.Add(id, tag);
+    //});
+    #endregion
+
+    #region
     using (StreamReader sr = new StreamReader(@"C:\Users\HP\Desktop\Фильмы\ml-latest\TagCodes_MovieLens.csv"))
     {
-        Console.WriteLine("TagCodes_MovieLens");
+        //Console.WriteLine("TagCodes_MovieLens");
         string line = sr.ReadLine();
 
         while ((line = sr.ReadLine()) != null)
         {
-            string[] row = line.Split(',');
-            code_tag.Add(row[0], row[1]);
+            var line_span = line.AsSpan();
+            int index = line_span.IndexOf(',');
+
+            string id = line_span.Slice(0, index).ToString();
+            string tag = line_span.Slice(index + 1).ToString();
+            code_tag.Add(id, tag);
             //Console.WriteLine(line);
         }
     }
+    #endregion
+
+    sw.Stop();
+    Console.WriteLine($"TagCodes_MovieLens: {sw.Elapsed}");
 }
 
 
@@ -335,20 +619,69 @@ void Read_TagCodes_MovieLens()
 //для каждого фильма сопоставила код imdb и теги (код - коды)
 void Read_TagScores_MovieLens()
 {
+    // 1,1,0.029000000000000026
+
+    //Console.WriteLine("TagScores_MovieLens");
+
+    System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+    sw.Start();
+
+    #region
+    //var all_lines = File.ReadAllLines
+    //    (@"C:\Users\HP\Desktop\Фильмы\ml-latest\TagScores_MovieLens.csv").Skip(1);
+    //Parallel.ForEach(all_lines, line =>
+    //{
+    //    var line_span = line.AsSpan();
+    //    int index = line_span.IndexOf(',');
+    //    string id_movielens = line_span.Slice(0, index).ToString();
+
+    //    int index2 = line_span.Slice(index + 1).IndexOf(',');
+    //    string id_imdb = movielens_imdb[id_movielens];
+    //    string tag_id = line_span.Slice(index, index2).ToString();
+    //    string level = line_span.Slice(index2).ToString();
+
+    //    if (code_movie.ContainsKey(id_imdb))
+    //    {
+    //        if (!tag_movies.ContainsKey(tag_id))
+    //        {
+    //            tag_movies.Add(tag_id, new HashSet<string>());
+    //        }
+
+    //        if (!imdb_tags.ContainsKey(id_imdb))
+    //        {
+    //            imdb_tags.Add(id_imdb, new HashSet<string>());
+    //        }
+
+    //        level = level.Replace(".", ",");
+    //        double relevance = Convert.ToDouble(level);
+
+    //        if (relevance > 0.5)
+    //        {
+    //            imdb_tags[id_imdb].Add(code_tag[tag_id]);
+    //            tag_movies[tag_id].Add(code_movie[id_imdb]);
+    //        }
+    //    }
+    //});
+    #endregion
+
+    #region
     using (StreamReader sr = new StreamReader(@"C:\Users\HP\Desktop\Фильмы\ml-latest\TagScores_MovieLens.csv"))
     {
-        Console.WriteLine("TagScores_MovieLens");
+        //Console.WriteLine("TagScores_MovieLens");
         string line = sr.ReadLine();
         //Console.WriteLine(line);
 
         while ((line = sr.ReadLine()) != null)
         {
             //Console.WriteLine(line);
-            string[] row = line.Split(',');
-            string id_movielens = row[0];
+            var line_span = line.AsSpan();
+            int index = line_span.IndexOf(',');
+            string id_movielens = line_span.Slice(0, index).ToString();
+
+            int index2 = line_span.Slice(index + 1).IndexOf(',');
             string id_imdb = movielens_imdb[id_movielens];
-            string tag_id = row[1];
-            string level = row[2];
+            string tag_id = line_span.Slice(index, index2).ToString();
+            string level = line_span.Slice(index2).ToString();
 
             if (code_movie.ContainsKey(id_imdb))
             {
@@ -371,5 +704,9 @@ void Read_TagScores_MovieLens()
             }
         }
     }
+    #endregion
+
+    sw.Stop();
+    Console.WriteLine($"TagScores_MovieLens: {sw.Elapsed}");
 }
 
