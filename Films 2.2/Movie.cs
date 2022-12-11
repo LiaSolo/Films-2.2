@@ -8,20 +8,22 @@ namespace Films_2._2
 {
     internal class Movie
     {
+        //
         public HashSet<string> Actors { get; set; }
         public HashSet<string> Tags { get; set; }
+        public int Id { get; set; }
         public string Name { get; set; }
         public HashSet<string> Directors { get; set; }
         public string Rating { get; set; }
 
-        public Movie(string name, HashSet<string> actors, HashSet<string> directors, HashSet<string> tags, string rating)
-        {
-            Name = name;
-            Actors = actors;
-            Directors = directors;
-            Tags = tags;
-            Rating = rating;
-        }
+        //public Movie(string name, HashSet<string> actors, HashSet<string> directors, HashSet<string> tags, string rating)
+        //{
+        //    Name = name;
+        //    Actors = actors;
+        //    Directors = directors;
+        //    Tags = tags;
+        //    Rating = rating;
+        //}
 
         public static void PrintMovie(Movie movie)
         {
