@@ -14,13 +14,13 @@ namespace Films_2._2
         public HashSet<string> Directors { get; set; }
         public string Rating { get; set; }
 
-        public Movie(string name, HashSet<string> actors, HashSet<string> directors, HashSet<string> tags, string rating)
+        public Movie(string name)
         {
             Name = name;
-            Actors = actors;
-            Directors = directors;
-            Tags = tags;
-            Rating = rating;
+            Actors = new HashSet<string>();
+            Directors = new HashSet<string>();
+            Tags = new HashSet<string>();
+            Rating = "-1";
         }
 
         public static void PrintMovie(Movie movie)
