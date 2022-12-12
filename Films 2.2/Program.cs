@@ -79,10 +79,10 @@ Dictionary<string, string> movielens_imdb = new Dictionary<string, string>();   
 //Dictionary<string, HashSet<Movie>> personName_movies = new Dictionary<string, HashSet<Movie>>();
 //Dictionary<string, HashSet<Movie>> tagName_movies = new Dictionary<string, HashSet<Movie>>();
 
-HashSet<Actor> a_check = new HashSet<Actor>();
-HashSet<Director> d_check = new HashSet<Director>();
-HashSet<Movie_bd> m_check = new HashSet<Movie_bd>();
-HashSet<Tag> t_check = new HashSet<Tag>();
+HashSet<string> a_check = new HashSet<string>();
+HashSet<string> d_check = new HashSet<string>();
+HashSet<string> m_check = new HashSet<string>();
+HashSet<string> t_check = new HashSet<string>();
 
 
 ApplicationContext db = new ApplicationContext();
@@ -101,7 +101,10 @@ int IdDirector = 1;
 
 #region
 
-Task movie_codes = Task.Factory.StartNew(() =>
+Task read_check = Task.Factory.StartNew(() =>
+ReadCheck());
+
+Task movie_codes = read_check.ContinueWith( t =>
    Read_MovieCodes_IMDB());
 
 Task rating = movie_codes.ContinueWith( t =>
@@ -112,8 +115,8 @@ Task links = Task.Factory.StartNew(() =>
    Read_links_IMDB_MovieLens());
 
 
-Task tag_codes = Task.Factory.StartNew(() =>
-   Read_TagCodes_MovieLens());
+Task tag_codes = read_check.ContinueWith(t =>
+  Read_TagCodes_MovieLens());
 
 
 
@@ -174,8 +177,7 @@ end.Wait();
 // Read_ActorsDirectorsNames_IMDB -- Read_ActorsDirectorsCodes_IMDB
 // Read_MovieCodes_IMDB ___________/
 // Read_TagCodes_MovieLens____     \
-//                            \Read_TagScores_MovieLens
-// Read_links_IMDB_MovieLens /
+// Read_links_IMDB_MovieLens--\Read_TagScores_MovieLens
 
 
 //using (ApplicationContext db = new ApplicationContext())
@@ -184,78 +186,108 @@ end.Wait();
 //    db.Database.EnsureCreated();
 //}
 
-
-
-
-void Make_bd()
+void ReadCheck()
 {
-    //Console.WriteLine($"code_movie: {code_movie.Count}");
-    //Console.WriteLine($"movieCode_directors: {movieCode_directors.Count}");
-    //Console.WriteLine($"movieCode_actors: {movieCode_actors.Count}");
-    //Console.WriteLine($"movieCode_rating: {movieCode_rating.Count}");
-    //Console.WriteLine($"movieCode_directors: {imdb_tags.Count}");
-
-    //System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
-    //sw.Start();
-
-    int flag = 0;
-
-    foreach (var m in code_movie)
+    using (StreamReader s = new StreamReader("actors.txt"))
     {
-        string id = m.Key;
-        Movie_bd movie = m.Value;
-        string name = movie.Name;
-
-
-        if (m_check.Contains(movie))
+        string line;
+        while ((line = s.ReadLine()) != null)
         {
-            continue;
-        }
-
-
-        if (movie.Rating > -1 && movie.Actors.Count > 0 
-            && movie.Directors.Count > 0 && movie.Tags.Count > 0)
-        {
-            if (flag > 3)
-            {
-                return;
-            }
-
-            db.Add(movie);
-            flag += 1;
-
-            foreach (Actor a in movie.Actors)
-            {
-                if (!a_check.Contains(a))
-                {
-                    db.Actors.Add(a);
-                }
-
-            }
-
-            foreach (Director d in movie.Directors)
-            {
-                if (!d_check.Contains(d))
-                {
-                    db.Directors.Add(d);
-                }
-            }
-
-            foreach (Tag t in movie.Tags)
-            {
-                if (!t_check.Contains(t))
-                {
-                    db.Tags.Add(t);
-                }
-            }
-
-            db.SaveChanges();
+            line = s.ReadLine();
+            a_check.Add(line);
         }
     }
 
-    //sw.Stop();
-    //Console.WriteLine($"Make_name_movie_dict: {sw.Elapsed}");
+    using (StreamReader s = new StreamReader("directors.txt"))
+    {
+        string line;
+        while ((line = s.ReadLine()) != null)
+        {
+            line = s.ReadLine();
+            d_check.Add(line);
+        }
+    }
+
+    using (StreamReader s = new StreamReader("movies.txt"))
+    {
+        string line;
+        while ((line = s.ReadLine()) != null)
+        {
+            line = s.ReadLine();
+            m_check.Add(line);
+        }
+    }
+
+    using (StreamReader s = new StreamReader("tags.txt"))
+    {
+        string line;
+        while ((line = s.ReadLine()) != null)
+        {
+            line = s.ReadLine();
+            t_check.Add(line);
+        }
+    }
 }
+
+
+//void Make_bd()
+//{
+//    //Console.WriteLine($"code_movie: {code_movie.Count}");
+//    //Console.WriteLine($"movieCode_directors: {movieCode_directors.Count}");
+//    //Console.WriteLine($"movieCode_actors: {movieCode_actors.Count}");
+//    //Console.WriteLine($"movieCode_rating: {movieCode_rating.Count}");
+//    //Console.WriteLine($"movieCode_directors: {imdb_tags.Count}");
+
+//    //System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+//    //sw.Start();
+
+//    int flag = 0;
+
+//    foreach (var m in m_check)
+//    {
+//        string id = m;
+//        Movie_bd movie = code_movie[m];
+//        string name = movie.Name;
+
+
+//        if (flag > 3)
+//        {
+//            return;
+//        }
+
+//        flag += 1;
+
+//        foreach (Actor a in movie.Actors)
+//        {
+//            if (!a_check.Contains(a))
+//            {
+//                db.Actors.Add(a);
+//            }
+
+//        }
+
+//        foreach (Director d in movie.Directors)
+//        {
+//            if (!d_check.Contains(d))
+//            {
+//                db.Directors.Add(d);
+//            }
+//        }
+
+//        foreach (Tag t in movie.Tags)
+//        {
+//            if (!t_check.Contains(t))
+//            {
+//                db.Tags.Add(t);
+//            }
+//        }
+
+//        db.SaveChanges();
+//    }
+
+//    //sw.Stop();
+//    //Console.WriteLine($"Make_name_movie_dict: {sw.Elapsed}");
+//}
 
 #region
 //void Make_actors_directors_names_movies_dict()
@@ -409,7 +441,7 @@ void Read_ActorsDirectorsCodes_IMDB()
 
             string job = line_span.Slice(0, index).ToString();
 
-            if (code_movie.ContainsKey(id_movie) && person_moviesCodes.ContainsKey(id_person))
+            if (person_moviesCodes.ContainsKey(id_person))
             {
                 if (job == "director")
                 {
@@ -422,13 +454,8 @@ void Read_ActorsDirectorsCodes_IMDB()
                     if (person_moviesCodes[id_person].Contains(id_movie))
                     {
                         code_movie[id_movie].Directors.Add(code_director[id_person]);
-                        code_director[id_person].Movies.Add(code_movie[id_movie]);
 
-                        lock (db)
-                        {
-                            db.Movies.Update(code_movie[id_movie]);
-                            db.Directors.Update(code_director[id_person]);
-                        }
+                        db.SaveChanges();
                     }
                     
                 }
@@ -442,13 +469,8 @@ void Read_ActorsDirectorsCodes_IMDB()
                     if (person_moviesCodes[id_person].Contains(id_movie))
                     {
                         code_movie[id_movie].Actors.Add(code_actor[id_person]);
-                        code_actor[id_person].Movies.Add(code_movie[id_movie]);
 
-                        lock (db)
-                        {
-                            db.Movies.Update(code_movie[id_movie]);
-                            db.Actors.Update(code_actor[id_person]);
-                        }
+                        db.SaveChanges();
                     }
                 }
             }
@@ -549,52 +571,32 @@ void Read_ActorsDirectorsNames_IMDB()
             List<string> moviesCodes = new List<string>();
             moviesCodes.AddRange(line_span.Slice(index + 1).ToString().Split(','));
 
-            //List<string> moviesNames = new List<string>();
-
-            //foreach (string id_m in moviesCodes)
-            //{
-            //    if (code_movie.ContainsKey(id_m))
-            //    {
-            //        moviesNames.Add(code_movie[id_m]);
-            //    }
-            //}
-
-            //if (jobs.Contains("actor") || jobs.Contains("actress") || jobs.Contains("director"))
-            //{
-            //    personCode_movies.Add(id, moviesCodes);
-            //    personCode_name.Add(id, name);
-            //}
-
 
             if (jobs.Contains("actor") || jobs.Contains("actress") || jobs.Contains("director"))
             {
                 person_moviesCodes.Add(id, moviesCodes);
       
 
-                if (jobs.Contains("director"))
+                if (jobs.Contains("director") && d_check.Contains(id))
                 {
                     Director d = new Director { Id = IdDirector, Name = name, Movies = new HashSet<Movie_bd>() };
                     IdDirector++;
                     code_director.Add(id, d);
 
-                    lock (db)
-                    {
-                        db.Directors.Add(d);
-                        db.SaveChanges();
-                    }
+                    db.Directors.Add(d);
+                    db.SaveChanges();
+
 
                 }
-                else
+                
+                if (a_check.Contains(id))
                 {
                     Actor a = new Actor { Id = IdActor, Name = name, Movies = new HashSet<Movie_bd>() };
                     IdActor++;
                     code_actor.Add(id, a);
 
-                    lock (db)
-                    {
-                        db.Actors.Add(a);
-                        db.SaveChanges();
-                    }
+                    db.Actors.Add(a);
+                    db.SaveChanges();
 
                 }
             }
@@ -736,6 +738,11 @@ void Read_MovieCodes_IMDB()
 
             if (lang == "US" || lang == "RU")
             {
+                if (!m_check.Contains(id))
+                {
+                    continue;
+                }
+
                 if (!code_movie.ContainsKey(id))
                 {
                     Movie_bd movie = new Movie_bd { Id = IdFilm, Name = name, Actors = new HashSet<Actor>(), Directors = new HashSet<Director>(), Tags = new HashSet<Tag>(), Rating = -1 };
@@ -743,11 +750,8 @@ void Read_MovieCodes_IMDB()
                     code_movie.Add(id, movie);
 
 
-                    lock(db)
-                    {
-                        db.Movies.Add(movie);
-                        db.SaveChanges();
-                    }
+                    db.Movies.Add(movie);
+                    db.SaveChanges();
 
 
                     //Console.WriteLine(line);
@@ -814,10 +818,7 @@ void Read_Ratings_IMDB()
 
             code_movie[id].Rating = Convert.ToDouble(rate);
 
-            lock (db)
-            {
-                db.Movies.Update(code_movie[id]);
-            }
+            db.Movies.Update(code_movie[id]);
 
             //Console.WriteLine(line);
         }
@@ -867,15 +868,18 @@ void Read_TagCodes_MovieLens()
 
             string id = line_span.Slice(0, index).ToString();
             string name_tag = line_span.Slice(index + 1).ToString();
+
+            if (!t_check.Contains(id))
+            {
+                continue;
+            }
+
             Tag tag = new Tag { Id = IdTag, Name = name_tag, Movies = new HashSet<Movie_bd>() };
             IdTag++;
             code_tag.Add(id, tag);
 
-            lock (db)
-            {
-                db.Tags.Add(tag);
-                db.SaveChanges();
-            }
+            db.Tags.Add(tag);
+            db.SaveChanges();
 
             //Console.WriteLine(line);
         }
@@ -975,17 +979,11 @@ void Read_TagScores_MovieLens()
             if (relevance > 0.5)
             {
                 code_movie[id_imdb].Tags.Add(code_tag[tag_id]);
-                code_tag[tag_id].Movies.Add(code_movie[id_imdb]);
 
-                lock (db)
-                {
-                    db.Movies.Update(code_movie[id_imdb]);
-                    db.Tags.Update(code_tag[tag_id]);
-                }
+                db.SaveChanges();
+
+
             }
-
-
-        }
     }
     #endregion
 
