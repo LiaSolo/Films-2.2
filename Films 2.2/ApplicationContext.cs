@@ -15,7 +15,7 @@ namespace Films_2._2
         public DbSet<Tag> Tags { get; set; }
 
 
-        public ApplicationContext() => Database.EnsureCreated();
+        public ApplicationContext() { }//=> Database.EnsureCreated();
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
