@@ -14,7 +14,7 @@ namespace Films_2._2
         public HashSet<Tag> Tags { get; set; }
         
         public HashSet<Director> Directors { get; set; }
-        public double Rating { get; set; }
+        public string Rating { get; set; }
 
     }
 }
