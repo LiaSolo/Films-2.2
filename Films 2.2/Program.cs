@@ -131,7 +131,7 @@ Task tag_scores = Task.WhenAll(new Task[] { links, movie_codes, tag_codes }).Con
 
 //Task make_bd = Task.WhenAll(new Task[] { rating, tag_scores, a_d_codes }).ContinueWith(t => Make_bd());
 
-Task end = Task.WhenAll(new Task[] { a_d_codes }).ContinueWith(t =>
+Task end = Task.WhenAll(new Task[] { a_d_codes, tag_scores }).ContinueWith(t =>
 {
     lock (db)
     {
@@ -441,10 +441,20 @@ void Read_MovieCodes_IMDB()
             index = line_span.IndexOf('\t'); // 3
             string name = line_span.Slice(0, index).ToString();
 
-            if (m_check.Contains(id))
+            line_span = line_span.Slice(index + 1).ToString();
+            index = line_span.IndexOf('\t'); // 4
+            string reg = line_span.Slice(0, index).ToString();
+
+            line_span = line_span.Slice(index + 1).ToString();
+            index = line_span.IndexOf('\t'); // 5
+            string lang = line_span.Slice(0, index).ToString();
+
+            if (m_check.Contains(id) && !code_movie.ContainsKey(id) && 
+                (reg == "US" || reg == "RU" || reg == "GB" || lang == "en" || lang == "ru"))
             {
-                Movie_bd m = new Movie_bd { Id = IdFilm, Name = name, Actors = new HashSet<Actor>(), Directors = new HashSet<Director>(), Tags = new HashSet<Tag>(), Rating = -1 };
+                Movie_bd m = new Movie_bd { Id = IdFilm, Name = name, Actors = new HashSet<Actor>(), Directors = new HashSet<Director>(), Tags = new HashSet<Tag>(), Rating = "-1" };
                 IdFilm++;
+                code_movie.Add(id, m);
 
                 flag++;
                 lock (db)
@@ -459,7 +469,6 @@ void Read_MovieCodes_IMDB()
                 }
             }
         }
-
 
         #endregion
 
@@ -500,9 +509,8 @@ void Read_Ratings_IMDB()
             line_span = line_span.Slice(index + 1).ToString();
             index = line_span.IndexOf('\t'); // 2
             string rate = line_span.Slice(0, index).ToString();
-            rate = rate.Replace('.', ',');
 
-            code_movie[id].Rating = Convert.ToDouble(rate);
+            code_movie[id].Rating = rate;
 
             lock (db)
             {
