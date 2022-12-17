@@ -177,7 +177,7 @@ end.Wait();
 
 void ReadCheck()
 {
-    using (StreamReader s = new StreamReader("actors.txt"))
+    using (StreamReader s = new StreamReader(@"C:\Users\HP\Desktop\pre\actors.txt"))
     {
         string line;
         while ((line = s.ReadLine()) != null)
@@ -187,7 +187,7 @@ void ReadCheck()
         }
     }
 
-    using (StreamReader s = new StreamReader("directors.txt"))
+    using (StreamReader s = new StreamReader(@"C:\Users\HP\Desktop\pre\directors.txt"))
     {
         string line;
         while ((line = s.ReadLine()) != null)
@@ -197,7 +197,7 @@ void ReadCheck()
         }
     }
 
-    using (StreamReader s = new StreamReader("movies.txt"))
+    using (StreamReader s = new StreamReader(@"C:\Users\HP\Desktop\pre\movies.txt"))
     {
         string line;
         while ((line = s.ReadLine()) != null)
@@ -207,7 +207,7 @@ void ReadCheck()
         }
     }
 
-    using (StreamReader s = new StreamReader("tags.txt"))
+    using (StreamReader s = new StreamReader(@"C:\Users\HP\Desktop\pre\tags.txt"))
     {
         string line;
         while ((line = s.ReadLine()) != null)
