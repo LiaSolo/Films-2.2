@@ -143,9 +143,8 @@ Task end = Task.WhenAll(new Task[] { a_d_codes, tag_scores }).ContinueWith(t =>
 
 end.Wait();
 
-
-
 #endregion
+
 
 //sw_.Stop();
 //Console.WriteLine($"END: {sw_.Elapsed}");
@@ -168,12 +167,6 @@ end.Wait();
 // Read_TagCodes_MovieLens____     \
 // Read_links_IMDB_MovieLens--\Read_TagScores_MovieLens
 
-
-//using (ApplicationContext db = new ApplicationContext())
-//{
-//    db.Database.EnsureDeleted();
-//    db.Database.EnsureCreated();
-//}
 
 void ReadCheck()
 {
@@ -291,6 +284,11 @@ void Read_ActorsDirectorsCodes_IMDB()
     }
     #endregion
 
+    lock (db)
+    {
+        db.SaveChanges();
+    }
+
     sw.Stop();
     Console.WriteLine($"ActorsDirectorsCodes_IMDB: {sw.Elapsed}");
 }
@@ -364,6 +362,11 @@ void Read_ActorsDirectorsNames_IMDB()
         }
 
         #endregion
+        
+        lock (db)
+        {
+            db.SaveChanges();
+        }
 
         sw.Stop();
         Console.WriteLine($"ActorsDirectorsNames_IMDB: {sw.Elapsed}");
@@ -404,6 +407,11 @@ void Read_links_IMDB_MovieLens()
 
     #endregion
 
+    lock (db)
+    {
+        db.SaveChanges();
+    }
+
     sw.Stop();
     Console.WriteLine($"links_IMDB_MovieLens: {sw.Elapsed}");
 }
@@ -420,6 +428,8 @@ void Read_MovieCodes_IMDB()
 
     int flag = 0;
     #region
+
+    int k = 0;
 
     using (StreamReader sr = new StreamReader(@"C:\Users\HP\Desktop\Фильмы\ml-latest\MovieCodes_IMDB.tsv"))
     {
@@ -460,6 +470,7 @@ void Read_MovieCodes_IMDB()
                 lock (db)
                 {
                     db.Movies.Add(m);
+                    k++;
 
                     if (flag == 110)
                     {
@@ -472,9 +483,14 @@ void Read_MovieCodes_IMDB()
 
         #endregion
 
-
+        Console.WriteLine(k);
         sw.Stop();
         Console.WriteLine($"MovieCodes_IMDB: {sw.Elapsed}");
+    }
+
+    lock (db)
+    {
+        db.SaveChanges();
     }
 }
 
@@ -522,6 +538,11 @@ void Read_Ratings_IMDB()
         }
     }
     #endregion
+
+    lock (db)
+    {
+        db.SaveChanges();
+    }
 
     sw.Stop();
     Console.WriteLine($"Ratings_IMDB: {sw.Elapsed}");
@@ -580,6 +601,11 @@ void Read_TagCodes_MovieLens()
         }
     }
     #endregion
+
+    lock (db)
+    {
+        db.SaveChanges();
+    }
 
     sw.Stop();
     Console.WriteLine($"TagCodes_MovieLens: {sw.Elapsed}");
@@ -653,6 +679,11 @@ void Read_TagScores_MovieLens()
         }
     }
     #endregion
+
+    lock (db)
+    {
+        db.SaveChanges();
+    }
 
     sw.Stop();
     Console.WriteLine($"TagScores_MovieLens: {sw.Elapsed}");

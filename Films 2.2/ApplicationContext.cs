@@ -19,7 +19,7 @@ namespace Films_2._2
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=hellbitch;Username=postgres;Password=1"); // postgre
+            optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=hellbitch2;Username=postgres;Password=1"); // postgre
         }
     }
 }
