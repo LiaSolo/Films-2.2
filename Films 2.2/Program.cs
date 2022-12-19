@@ -95,38 +95,12 @@ int IdTag = 1;
 int IdActor = 1;
 int IdDirector = 1;
 
-using (StreamReader s = new StreamReader(@"C:\Users\HP\Desktop\pre\actors.txt"))
-{
-    int ak = 0;
-    string line;
-    while ((line = s.ReadLine()) != null)
-    {
-        ak++;
-        line = s.ReadLine();
-        a_check.Add(line);
-    }
-    Console.WriteLine(ak);
-}
-
-
-using (StreamReader s = new StreamReader(@"C:\Users\HP\Desktop\pre\directors.txt"))
-{
-    int dk = 0;
-    string line;
-    while ((line = s.ReadLine()) != null)
-    {
-        dk++;
-        line = s.ReadLine();
-        d_check.Add(line);
-    }
-    Console.WriteLine(dk);
-}
 
 
 //System.Diagnostics.Stopwatch sw_ = new System.Diagnostics.Stopwatch();
 //sw_.Start();
 
-/*
+
 #region
 
 Task read_check = Task.Factory.StartNew(() =>
@@ -172,7 +146,6 @@ Task end = Task.WhenAll(new Task[] { a_d_codes, tag_scores }).ContinueWith(t =>
 end.Wait();
 
 #endregion
-*/
 
 //sw_.Stop();
 //Console.WriteLine($"END: {sw_.Elapsed}");
@@ -201,41 +174,49 @@ void ReadCheck()
     using (StreamReader s = new StreamReader(@"C:\Users\HP\Desktop\pre\actors.txt"))
     {
         string line;
-        while ((line = s.ReadLine()) != null)
+        for (int i = 0; i < 20000; i++)
         {
             line = s.ReadLine();
             a_check.Add(line);
         }
+
+        Console.WriteLine(a_check.Count);
     }
 
     using (StreamReader s = new StreamReader(@"C:\Users\HP\Desktop\pre\directors.txt"))
     {
         string line;
-        while ((line = s.ReadLine()) != null)
+        for (int i = 0; i < 5000; i++)
         {
             line = s.ReadLine();
             d_check.Add(line);
         }
+
+        Console.WriteLine(d_check.Count);
     }
 
     using (StreamReader s = new StreamReader(@"C:\Users\HP\Desktop\pre\movies.txt"))
     {
         string line;
-        while ((line = s.ReadLine()) != null)
+        for (int i = 0; i < 20000; i++)
         {
             line = s.ReadLine();
             m_check.Add(line);
         }
+
+        Console.WriteLine(m_check.Count);
     }
 
     using (StreamReader s = new StreamReader(@"C:\Users\HP\Desktop\pre\tags.txt"))
     {
         string line;
-        while ((line = s.ReadLine()) != null)
+        for (int i = 0; i < 2000; i++)
         {
             line = s.ReadLine();
             t_check.Add(line);
         }
+
+        Console.WriteLine(t_check.Count);
     }
 }
 
