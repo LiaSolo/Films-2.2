@@ -95,10 +95,38 @@ int IdTag = 1;
 int IdActor = 1;
 int IdDirector = 1;
 
+using (StreamReader s = new StreamReader(@"C:\Users\HP\Desktop\pre\actors.txt"))
+{
+    int ak = 0;
+    string line;
+    while ((line = s.ReadLine()) != null)
+    {
+        ak++;
+        line = s.ReadLine();
+        a_check.Add(line);
+    }
+    Console.WriteLine(ak);
+}
+
+
+using (StreamReader s = new StreamReader(@"C:\Users\HP\Desktop\pre\directors.txt"))
+{
+    int dk = 0;
+    string line;
+    while ((line = s.ReadLine()) != null)
+    {
+        dk++;
+        line = s.ReadLine();
+        d_check.Add(line);
+    }
+    Console.WriteLine(dk);
+}
+
+
 //System.Diagnostics.Stopwatch sw_ = new System.Diagnostics.Stopwatch();
 //sw_.Start();
 
-
+/*
 #region
 
 Task read_check = Task.Factory.StartNew(() =>
@@ -144,7 +172,7 @@ Task end = Task.WhenAll(new Task[] { a_d_codes, tag_scores }).ContinueWith(t =>
 end.Wait();
 
 #endregion
-
+*/
 
 //sw_.Stop();
 //Console.WriteLine($"END: {sw_.Elapsed}");
@@ -305,6 +333,8 @@ void Read_ActorsDirectorsNames_IMDB()
     System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
     sw.Start();
 
+    int ak = 0, dk = 0;
+
     int flag = 0;
     #region
     using (StreamReader sr = new StreamReader(@"C:\Users\HP\Desktop\Фильмы\ml-latest\ActorsDirectorsNames_IMDB.txt"))
@@ -329,7 +359,7 @@ void Read_ActorsDirectorsNames_IMDB()
                 Actor a = new Actor { Id = IdActor, Name = name, Movies = new HashSet<Movie_bd>() };
                 IdActor++;
                 code_actor.Add(id, a);
-
+                ak++;
                 lock (db)
                 {
                     db.Actors.Add(a);
@@ -343,7 +373,7 @@ void Read_ActorsDirectorsNames_IMDB()
                 Director d = new Director { Id = IdDirector, Name = name, Movies = new HashSet<Movie_bd>() };
                 IdDirector++;
                 code_director.Add(id, d);
-
+                dk++;
                 lock (db)
                 {
                     db.Directors.Add(d);
@@ -367,6 +397,8 @@ void Read_ActorsDirectorsNames_IMDB()
         {
             db.SaveChanges();
         }
+        Console.WriteLine($"ak {ak}");
+        Console.WriteLine($"dk {dk}");
 
         sw.Stop();
         Console.WriteLine($"ActorsDirectorsNames_IMDB: {sw.Elapsed}");
