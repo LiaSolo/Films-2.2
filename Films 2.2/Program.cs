@@ -221,6 +221,10 @@ void ReadCheck()
 }
 
 
+void Make_top()
+{
+
+}
 
 
 //для каждого фильма получила наборы актёров и режиссёров (код - имена)
@@ -271,11 +275,13 @@ void Read_ActorsDirectorsCodes_IMDB()
             if (job == "director" && code_director.ContainsKey(id_person))
             {
                 code_movie[id_movie].Directors.Add(code_director[id_person]);
+                code_director[id_person].Movies.Add(code_movie[id_movie]);
                 flag++;
             }
             else if ((job == "actor" || job == "actress") && code_actor.ContainsKey(id_person))
             {
                 code_movie[id_movie].Actors.Add(code_actor[id_person]);
+                code_actor[id_person].Movies.Add(code_movie[id_movie]);
                 flag++;
             }
             
@@ -475,7 +481,13 @@ void Read_MovieCodes_IMDB()
             if (m_check.Contains(id) && !code_movie.ContainsKey(id) && 
                 (reg == "US" || reg == "RU" || reg == "GB" || lang == "en" || lang == "ru"))
             {
-                Movie_bd m = new Movie_bd { Id = IdFilm, Name = name, Actors = new HashSet<Actor>(), Directors = new HashSet<Director>(), Tags = new HashSet<Tag>(), Rating = "-1" };
+                Movie_bd m = new Movie_bd { Id = IdFilm, 
+                                            Name = name, 
+                                            Actors = new HashSet<Actor>(), 
+                                            Directors = new HashSet<Director>(), 
+                                            Tags = new HashSet<Tag>(), 
+                                            Rating = "-1",
+                                            Top = new HashSet<Movie_bd>()};
                 IdFilm++;
                 code_movie.Add(id, m);
 
@@ -677,6 +689,7 @@ void Read_TagScores_MovieLens()
             if (relevance > 0.5)
             {
                 code_movie[id_imdb].Tags.Add(code_tag[tag_id]);
+                code_tag[tag_id].Movies.Add(code_movie[id_imdb]);
                 flag++;
 
                 if (flag >= 110)
