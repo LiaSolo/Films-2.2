@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 
 ApplicationContext db = new ApplicationContext();
+ApplicationContext2 db2 = new ApplicationContext2();
 
 void WriteActor(Actor a)
 {
@@ -59,6 +60,16 @@ void WriteMovie(Movie_bd m)
     string answer = $"NAME: {m.Name} \nRATING: {m.Rating} \n" +
         $"ACTORS: {actors} \nDIRECTORS: {directors} \nTAGS: {tags}";
     Console.WriteLine(answer);
+}
+
+void WriteTop(Movie_bd m)
+{
+    var top_list = (from i in db2.Movies where i.Name == m.Name select i.Top).ToList();
+
+    for (int j = 0; j < 10; j++)
+    {
+        Console.WriteLine($"{j + 1}. {top_list[0].Top[j]}");
+    }
 }
 
 while (true)
@@ -131,7 +142,7 @@ while (true)
             break;
 
         case "Top":
-            Console.WriteLine("ENTRY TAG'S NAME");
+            Console.WriteLine("ENTRY MOVIE'S NAME");
             name = Console.ReadLine();
 
             List<Movie_bd> movie = db.Movies
@@ -139,13 +150,13 @@ while (true)
                 .Include(m => m.Directors)
                 .Include(m => m.Tags)
                 .Where(m => m.Name == name).ToList();
-            if (tags.Count == 0)
+            if (movie.Count == 0)
             {
-                Console.WriteLine("THE TAG DOESN'T EXIST");
+                Console.WriteLine("THE MOVIE DOESN'T EXIST");
             }
             else
             {
-                WriteTag(tags[0]);
+                WriteTop(movie[0]);
             }
 
             break;
