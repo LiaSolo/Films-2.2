@@ -96,6 +96,9 @@ int IdDirector = 1;
 
 ApplicationContext2 db2 = new ApplicationContext2();
 
+db2.Database.EnsureDeleted();
+db2.Database.EnsureCreated();
+
 
 //System.Diagnostics.Stopwatch sw_ = new System.Diagnostics.Stopwatch();
 //sw_.Start();
@@ -285,10 +288,11 @@ void Make_top()
             ans[count] = n.Key;
             count++;
             //Console.WriteLine($"{n.Key}: {n.Value}");
-            if (count == 10) return;
+            if (count == 10) break;
         }
 
         Top10 top10 = new Top10 { Id = IdTop, Top = ans };
+        IdTop++;
         db2.Top10.Add(top10);
         code_movie2[code].Top = top10;
         flag++;
@@ -545,7 +549,7 @@ void Read_MovieCodes_IMDB()
         Console.WriteLine($"MovieCodes_IMDB: {sw.Elapsed}");
     }
 
-    using (ApplicationContext2 db2 = new ApplicationContext2())
+    lock (db2)
     {
         db2.SaveChanges();
     }
