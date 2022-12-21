@@ -63,7 +63,7 @@ void WriteMovie(Movie_bd m)
 
 while (true)
 {
-    Console.WriteLine("COMMANDS: Person, Movie, Tag");
+    Console.WriteLine("COMMANDS: Person, Movie, Tag, Top");
     string input = Console.ReadLine();
     string name;
 
@@ -119,6 +119,26 @@ while (true)
             name = Console.ReadLine();
 
             List<Tag> tags = db.Tags.Include(t => t.Movies).Where(t => t.Name == name).ToList();
+            if (tags.Count == 0)
+            {
+                Console.WriteLine("THE TAG DOESN'T EXIST");
+            }
+            else
+            {
+                WriteTag(tags[0]);
+            }
+
+            break;
+
+        case "Top":
+            Console.WriteLine("ENTRY TAG'S NAME");
+            name = Console.ReadLine();
+
+            List<Movie_bd> movie = db.Movies
+                .Include(m => m.Actors)
+                .Include(m => m.Directors)
+                .Include(m => m.Tags)
+                .Where(m => m.Name == name).ToList();
             if (tags.Count == 0)
             {
                 Console.WriteLine("THE TAG DOESN'T EXIST");
