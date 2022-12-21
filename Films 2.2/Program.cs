@@ -52,6 +52,8 @@
 
 
 Dictionary<string, Movie_bd> code_movie = new Dictionary<string, Movie_bd>();                                // код фильма - класс фильма
+Dictionary<string, Movie2> code_movie2 = new Dictionary<string, Movie2>();
+
 Dictionary<string, HashSet<string>> movie_directors = new Dictionary<string, HashSet<string>>(); // код фильма - класс режиссёров 
 Dictionary<string, HashSet<string>> movie_actors = new Dictionary<string, HashSet<string>>();    // код фильма - класс актёров
 
@@ -85,11 +87,6 @@ HashSet<string> m_check = new HashSet<string>();
 HashSet<string> t_check = new HashSet<string>();
 
 
-ApplicationContext db = new ApplicationContext();
-
-db.Database.EnsureDeleted();
-db.Database.EnsureCreated();
-
 int IdFilm = 1;
 int IdTag = 1;
 int IdActor = 1;
@@ -97,13 +94,16 @@ int IdDirector = 1;
 
 
 
+ApplicationContext2 db2 = new ApplicationContext2();
+
+
 //System.Diagnostics.Stopwatch sw_ = new System.Diagnostics.Stopwatch();
 //sw_.Start();
 
 
-#region
+    #region
 
-Task read_check = Task.Factory.StartNew(() =>
+    Task read_check = Task.Factory.StartNew(() =>
 ReadCheck());
 
 Task movie_codes = read_check.ContinueWith( t =>
@@ -135,9 +135,10 @@ Task tag_scores = Task.WhenAll(new Task[] { links, movie_codes, tag_codes }).Con
 
 Task end = Task.WhenAll(new Task[] { a_d_codes, tag_scores }).ContinueWith(t =>
 {
-    lock (db)
+    Make_top();
+    using (ApplicationContext2 db2 = new ApplicationContext2())
     {
-        db.SaveChanges();
+        db2.SaveChanges();
     }
 
     Console.WriteLine("Database created!");
@@ -223,6 +224,91 @@ void ReadCheck()
 
 void Make_top()
 {
+    int IdTop = 1;
+    int flag = 0;
+    foreach (var m in code_movie)
+    {
+        string code = m.Key;
+        Movie_bd movie = m.Value;
+        HashSet<Movie_bd> vs = new HashSet<Movie_bd>();
+
+        string[] ans = new string[10];
+
+        Dictionary<string, double> top = new Dictionary<string, double>();
+
+        foreach (Actor a in movie.Actors)
+        {
+            foreach (Movie_bd ma in a.Movies)
+            {
+                vs.Add(ma);
+            }
+        }
+
+        foreach (Director d in movie.Directors)
+        {
+            foreach (Movie_bd md in d.Movies)
+            {
+                vs.Add(md);
+
+
+                //Console.WriteLine($"{m.Name} && {mad.Name}: {rel}");
+                //Console.WriteLine($"{m.Name} && {mad.Name}: {rel}");
+            }
+        }
+
+        foreach (Tag t in movie.Tags)
+        {
+            foreach (Movie_bd mt in t.Movies)
+            {
+                vs.Add(mt);
+            }
+        }
+
+        vs.Remove(movie);
+
+        foreach (Movie_bd mov in vs)
+        {
+            double rel = Movie_bd.Relevance(movie, mov);
+
+            if (!top.ContainsKey(mov.Name))
+            {
+                top.Add(mov.Name, rel);
+            }
+           
+        }
+
+        int count = 0;
+        var sorted_dic = top.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
+
+        foreach (var n in sorted_dic)
+        {
+            ans[count] = n.Key;
+            count++;
+            //Console.WriteLine($"{n.Key}: {n.Value}");
+            if (count == 10) return;
+        }
+
+        Top10 top10 = new Top10 { Id = IdTop, Top = ans };
+        db2.Top10.Add(top10);
+        code_movie2[code].Top = top10;
+        flag++;
+
+
+        if (flag > 110)
+        {
+            lock (db2)
+            {
+                db2.SaveChanges();
+            }
+            flag = 0;
+        }
+
+    }
+
+    lock(db2)
+    {
+        db2.SaveChanges();
+    }
 
 }
 
@@ -236,8 +322,6 @@ void Read_ActorsDirectorsCodes_IMDB()
 
     System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
     sw.Start();
-
-    int flag = 0;
 
     #region
     using (StreamReader sr = new StreamReader(@"C:\Users\HP\Desktop\Фильмы\ml-latest\ActorsDirectorsCodes_IMDB.tsv"))
@@ -276,34 +360,18 @@ void Read_ActorsDirectorsCodes_IMDB()
             {
                 code_movie[id_movie].Directors.Add(code_director[id_person]);
                 code_director[id_person].Movies.Add(code_movie[id_movie]);
-                flag++;
             }
             else if ((job == "actor" || job == "actress") && code_actor.ContainsKey(id_person))
             {
                 code_movie[id_movie].Actors.Add(code_actor[id_person]);
                 code_actor[id_person].Movies.Add(code_movie[id_movie]);
-                flag++;
             }
             
-            if (flag == 110)
-            {
-                flag = 0;
-                lock (db)
-                {
-                    db.SaveChanges();
-                }
-            } 
             
             //Console.WriteLine(line);
         }
     }
     #endregion
-
-    lock (db)
-    {
-        db.SaveChanges();
-    }
-
     sw.Stop();
     Console.WriteLine($"ActorsDirectorsCodes_IMDB: {sw.Elapsed}");
 }
@@ -320,9 +388,6 @@ void Read_ActorsDirectorsNames_IMDB()
     System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
     sw.Start();
 
-    int ak = 0, dk = 0;
-
-    int flag = 0;
     #region
     using (StreamReader sr = new StreamReader(@"C:\Users\HP\Desktop\Фильмы\ml-latest\ActorsDirectorsNames_IMDB.txt"))
     {
@@ -346,13 +411,6 @@ void Read_ActorsDirectorsNames_IMDB()
                 Actor a = new Actor { Id = IdActor, Name = name, Movies = new HashSet<Movie_bd>() };
                 IdActor++;
                 code_actor.Add(id, a);
-                ak++;
-                lock (db)
-                {
-                    db.Actors.Add(a);
-                }
-                
-                flag++;
             }
 
             if (d_check.Contains(id))
@@ -360,32 +418,10 @@ void Read_ActorsDirectorsNames_IMDB()
                 Director d = new Director { Id = IdDirector, Name = name, Movies = new HashSet<Movie_bd>() };
                 IdDirector++;
                 code_director.Add(id, d);
-                dk++;
-                lock (db)
-                {
-                    db.Directors.Add(d);
-                }
-                flag++;
-            }
-
-            if (flag >= 110)
-            {
-                flag = 0;
-                lock (db)
-                {
-                    db.SaveChanges();
-                }
             }
         }
 
         #endregion
-        
-        lock (db)
-        {
-            db.SaveChanges();
-        }
-        Console.WriteLine($"ak {ak}");
-        Console.WriteLine($"dk {dk}");
 
         sw.Stop();
         Console.WriteLine($"ActorsDirectorsNames_IMDB: {sw.Elapsed}");
@@ -426,11 +462,6 @@ void Read_links_IMDB_MovieLens()
 
     #endregion
 
-    lock (db)
-    {
-        db.SaveChanges();
-    }
-
     sw.Stop();
     Console.WriteLine($"links_IMDB_MovieLens: {sw.Elapsed}");
 }
@@ -448,7 +479,6 @@ void Read_MovieCodes_IMDB()
     int flag = 0;
     #region
 
-    int k = 0;
 
     using (StreamReader sr = new StreamReader(@"C:\Users\HP\Desktop\Фильмы\ml-latest\MovieCodes_IMDB.tsv"))
     {
@@ -488,34 +518,36 @@ void Read_MovieCodes_IMDB()
                                             Tags = new HashSet<Tag>(), 
                                             Rating = "-1",
                                             Top = new HashSet<Movie_bd>()};
+
+                Movie2 m2 = new Movie2 { Id = IdFilm, Name = name };
                 IdFilm++;
                 code_movie.Add(id, m);
+                code_movie2.Add(id, m2);
 
                 flag++;
-                lock (db)
-                {
-                    db.Movies.Add(m);
-                    k++;
 
-                    if (flag == 110)
+                db2.Movies.Add(m2);
+
+                if (flag == 110)
+                {
+                    lock (db2)
                     {
-                        flag = 0;
-                        db.SaveChanges();
+                        db2.SaveChanges();
                     }
+                    flag = 0;                   
                 }
             }
         }
 
         #endregion
 
-        Console.WriteLine(k);
         sw.Stop();
         Console.WriteLine($"MovieCodes_IMDB: {sw.Elapsed}");
     }
 
-    lock (db)
+    using (ApplicationContext2 db2 = new ApplicationContext2())
     {
-        db.SaveChanges();
+        db2.SaveChanges();
     }
 }
 
@@ -553,21 +585,11 @@ void Read_Ratings_IMDB()
 
             code_movie[id].Rating = rate;
 
-            lock (db)
-            {
-                db.Movies.Update(code_movie[id]);
-            }
-
 
             //Console.WriteLine(line);
         }
     }
     #endregion
-
-    lock (db)
-    {
-        db.SaveChanges();
-    }
 
     sw.Stop();
     Console.WriteLine($"Ratings_IMDB: {sw.Elapsed}");
@@ -584,8 +606,6 @@ void Read_TagCodes_MovieLens()
 
     System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
     sw.Start();
-
-    int flag = 0;
 
     #region
     using (StreamReader sr = new StreamReader(@"C:\Users\HP\Desktop\Фильмы\ml-latest\TagCodes_MovieLens.csv"))
@@ -609,28 +629,10 @@ void Read_TagCodes_MovieLens()
             Tag tag = new Tag { Id = IdTag, Name = name_tag, Movies = new HashSet<Movie_bd>() };
             IdTag++;
             code_tag.Add(id, tag);
-            flag++;
-
-            lock (db)
-            {
-                db.Tags.Add(tag);
-
-                if (flag >= 110)
-                {
-                    flag = 0;
-                    db.SaveChanges();
-                }
-            }
-
             //Console.WriteLine(line);
         }
     }
     #endregion
-
-    lock (db)
-    {
-        db.SaveChanges();
-    }
 
     sw.Stop();
     Console.WriteLine($"TagCodes_MovieLens: {sw.Elapsed}");
@@ -647,9 +649,6 @@ void Read_TagScores_MovieLens()
 
     System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
     sw.Start();
-
-    int flag = 0;
-
     #region
     using (StreamReader sr = new StreamReader(@"C:\Users\HP\Desktop\Фильмы\ml-latest\TagScores_MovieLens.csv"))
     {
@@ -690,26 +689,11 @@ void Read_TagScores_MovieLens()
             {
                 code_movie[id_imdb].Tags.Add(code_tag[tag_id]);
                 code_tag[tag_id].Movies.Add(code_movie[id_imdb]);
-                flag++;
-
-                if (flag >= 110)
-                {
-                    flag = 0;
-                    lock (db)
-                    {
-                        db.SaveChanges();
-                    }
-                }
 
             }
         }
     }
     #endregion
-
-    lock (db)
-    {
-        db.SaveChanges();
-    }
 
     sw.Stop();
     Console.WriteLine($"TagScores_MovieLens: {sw.Elapsed}");
