@@ -1,4 +1,5 @@
 ﻿using Films_2._2;
+using Microsoft.EntityFrameworkCore;
 
 // Код был неправильный, но суть отражает
 //                           До рефакторинга  // Parallel + AsSpan 
@@ -87,26 +88,20 @@ HashSet<string> m_check = new HashSet<string>();
 HashSet<string> t_check = new HashSet<string>();
 
 
+ApplicationContext db2 = new ApplicationContext();
+
 int IdFilm = 1;
 int IdTag = 1;
 int IdActor = 1;
 int IdDirector = 1;
 
-
-
-ApplicationContext2 db2 = new ApplicationContext2();
-
-db2.Database.EnsureDeleted();
-db2.Database.EnsureCreated();
-
-
 //System.Diagnostics.Stopwatch sw_ = new System.Diagnostics.Stopwatch();
 //sw_.Start();
 
 
-    #region
+#region
 
-    Task read_check = Task.Factory.StartNew(() =>
+Task read_check = Task.Factory.StartNew(() =>
 ReadCheck());
 
 Task movie_codes = read_check.ContinueWith( t =>
@@ -139,11 +134,6 @@ Task tag_scores = Task.WhenAll(new Task[] { links, movie_codes, tag_codes }).Con
 Task end = Task.WhenAll(new Task[] { a_d_codes, tag_scores }).ContinueWith(t =>
 {
     Make_top();
-    using (ApplicationContext2 db2 = new ApplicationContext2())
-    {
-        db2.SaveChanges();
-    }
-
     Console.WriteLine("Database created!");
 });
 
@@ -227,7 +217,6 @@ void ReadCheck()
 
 void Make_top()
 {
-    int IdTop = 1;
     int flag = 0;
     foreach (var m in code_movie)
     {
@@ -291,10 +280,16 @@ void Make_top()
             if (count == 10) break;
         }
 
-        Top10 top10 = new Top10 { Id = IdTop, Top = ans };
-        IdTop++;
-        db2.Top10.Add(top10);
-        code_movie2[code].Top = top10;
+        List<Movie_bd> movies = db2.Movies
+                .Include(m => m.Actors)
+                .Include(m => m.Directors)
+                .Include(m => m.Tags)
+                .Include(m => m.Top10)
+                .Where(m => m.Name == movie.Name).ToList();
+
+        movies[0].Top10 = ans;
+
+        db2.Movies.Update(movies[0]);
         flag++;
 
 
@@ -412,7 +407,7 @@ void Read_ActorsDirectorsNames_IMDB()
 
             if (a_check.Contains(id))
             {
-                Actor a = new Actor { Id = IdActor, Name = name, Movies = new HashSet<Movie_bd>() };
+                Actor a = new Actor {Name = name, Movies = new HashSet<Movie_bd>() };
                 IdActor++;
                 code_actor.Add(id, a);
             }
@@ -515,22 +510,21 @@ void Read_MovieCodes_IMDB()
             if (m_check.Contains(id) && !code_movie.ContainsKey(id) && 
                 (reg == "US" || reg == "RU" || reg == "GB" || lang == "en" || lang == "ru"))
             {
-                Movie_bd m = new Movie_bd { Id = IdFilm, 
-                                            Name = name, 
-                                            Actors = new HashSet<Actor>(), 
-                                            Directors = new HashSet<Director>(), 
-                                            Tags = new HashSet<Tag>(), 
-                                            Rating = "-1",
-                                            Top = new HashSet<Movie_bd>()};
+                Movie_bd m = new Movie_bd
+                {
+                    Id = IdFilm,
+                    Name = name,
+                    Actors = new HashSet<Actor>(),
+                    Directors = new HashSet<Director>(),
+                    Tags = new HashSet<Tag>(),
+                    Rating = "-1",
+                    Top10 = new string[10]
+                };
 
-                Movie2 m2 = new Movie2 { Id = IdFilm, Name = name };
                 IdFilm++;
                 code_movie.Add(id, m);
-                code_movie2.Add(id, m2);
 
                 flag++;
-
-                db2.Movies.Add(m2);
 
                 if (flag == 110)
                 {
