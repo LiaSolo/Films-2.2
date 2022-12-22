@@ -19,22 +19,21 @@ namespace ShitBlazor.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder); ;
-        
+            base.OnModelCreating(modelBuilder);        
         }
             
     }
 
-    //internal class ApplicationContext2 : DbContext
-    //{
-    //    public DbSet<Movie2> Movies { get; set; }
-    //    public DbSet<Top10> Top10 { get; set; }
+    public class ApplicationContext2 : DbContext
+    {
+        public ApplicationContext2(DbContextOptions options) : base(options) { }
 
-    //    public ApplicationContext2() => Database.EnsureCreated();
+        public DbSet<Movie2> Movies { get; set; }
+        public DbSet<Top10> Top10 { get; set; }
 
-    //    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    //    {
-    //        optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=hellbitchtop;Username=postgres;Password=1"); // postgre
-    //    }
-    //}
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+        }
+    }
 }

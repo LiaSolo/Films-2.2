@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ShitBlazor.Data
 {
-    internal class Movie2
+    public class Movie2
     {
         public int Id { get; set; }
         public string Name { get; set; }

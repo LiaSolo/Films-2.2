@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ShitBlazor.Data
 {
-    internal class Top10
+    public class Top10
     {
         public int Id { get; set; }
 

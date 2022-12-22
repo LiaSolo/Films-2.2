@@ -10,7 +10,9 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddDbContext<ApplicationContext>(options => 
-options.UseNpgsql(builder.Configuration.GetConnectionString("test")));
+options.UseNpgsql(builder.Configuration.GetConnectionString("info")));
+builder.Services.AddDbContext<ApplicationContext>(options =>
+options.UseNpgsql(builder.Configuration.GetConnectionString("top")));
 
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();

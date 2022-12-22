@@ -19,28 +19,90 @@ namespace ShitBlazor.Services
                 .Include(m => m.Tags)
                 .Where(m => m.Name == name).ToList();
 
-            if (movies.Count == 0)
-            {
-                Console.WriteLine("THE MOVIE DOESN'T EXIST");
-                return null;
-            }
+            if (movies.Count == 0) return null;
+            else return movies[0];
+        }
+        public List<Movie_bd> GetMoviesFromTag(string tag)
+        {
+            List<Tag> tags = db.Tags
+                .Include(t => t.Movies)
+                .Where(t => t.Name == tag).ToList();
+
+            if (tags.Count == 0) return null;
             else
             {
-                return movies[0];
+                List<Movie_bd> movies = db.Movies
+                .Include(m => m.Actors)
+                .Include(m => m.Directors)
+                .Include(m => m.Tags)
+                .Where(m => m.Tags.Contains(tags[0])).ToList();
+
+                return movies;
             }
         }
-        public List<Movie_bd> GetMoviesFromTag(string inputValue)
+        public List<Movie_bd> GetMoviesFromPerson(string name)
         {
-            return db.Tags.Include(t => t.Movies).Where(t => t.Name.ToLower() == inputValue.ToLower()).First().Movies.ToList();
+            List<Actor> actors = db.Actors
+              .Include(a => a.Movies)
+              .Where(a => a.Name == name).ToList();
+
+            List<Director> directors = db.Directors
+              .Include(d => d.Movies)
+              .Where(d => d.Name == name).ToList();
+
+            if (actors.Count + directors.Count == 0) return null;
+            else
+            {
+                List<Movie_bd> movies = new List<Movie_bd>();
+                if (actors.Count != 0)
+                {
+                    movies.AddRange(db.Movies
+                    .Include(m => m.Actors)
+                    .Include(m => m.Directors)
+                    .Include(m => m.Tags)
+                    .Where(m => m.Actors.Contains(actors[0])));
+                }
+
+                if (directors.Count != 0)
+                {
+                    movies.AddRange(db.Movies
+                    .Include(m => m.Actors)
+                    .Include(m => m.Directors)
+                    .Include(m => m.Tags)
+                    .Where(m => m.Directors.Contains(directors[0])).ToList());
+                }
+                
+                return movies;
+            }
         }
-        public List<Movie_bd> GetMoviesFromActor(string inputValue)
+
+        ApplicationContext2 db2;
+        public ApplicationService(ApplicationContext2 context2)
         {
-            return db.Actors.Include(a => a.Movies).Where(a => a.Name.ToLower() == inputValue.ToLower()).First().Movies.ToList();
+            db2 = context2;   
         }
-        public List<Movie_bd> GetMoviesFromDirector(string inputValue)
+
+        public List<Movie_bd> GetTop10(string movie_name)
         {
-            var x = db.Directors.Include(d => d.Movies).Where(d => d.Name.ToLower() == inputValue.ToLower()).ToList();
-            return x.FirstOrDefault()?.Movies?.ToList();
+            List<Movie_bd> movie = db.Movies
+            .Include(m => m.Actors)
+            .Include(m => m.Directors)
+            .Include(m => m.Tags)
+            .Where(m => m.Name == movie_name).ToList();
+
+            List<Movie_bd> top = new List<Movie_bd>();
+            if (movie.Count == 0) return null;
+            else
+            {
+                List<Top10> top_list = (from m in db2.Movies where m.Name == movie_name select m.Top).ToList();
+
+                for (int j = 0; j < 10; j++)
+                {
+                    top.Add(GetMovie(top_list[0].Top[j]));
+                }
+
+                return top;
+            }
         }
     }
 }
