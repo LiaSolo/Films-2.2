@@ -9,74 +9,73 @@
 
 <PageTitle>Finder</PageTitle>
 
-<h1>Finder</h1>
+<h1>Введите что-нибудь</h1>
 
 <div>
-    <p>Введите что-нибудь</p>
     <input @bind-value="@item" />
     <p>Значение переменной: @item</p>
-</div>
 
-<button class="btn btn-primary" @onclick=" () => FindMovie(item)">Movie</button>
-<button class="btn btn-primary" @onclick="FindActor">Actor</button>
-<button class="btn btn-primary" @onclick="FindDirector">Director</button>
-<button class="btn btn-primary" @onclick="() => FindTag(item)">Tag</button>
-@*<button class="btn btn-primary" @onclick="FindTop">Top</button>*@
+    <button class="btn btn-primary" @onclick=" () => FindMovie(item)">Movie</button>
+    <button class="btn btn-primary" @onclick="FindPerson">Person</button>
+    <button class="btn btn-primary" @onclick="() => FindTag(item)">Tag</button>
+</div>
 
 
 @if(isMovie && searchedMovie != null)
 {
-    <div style="margin-bottom: 40px; width: 1000px" class="col col-lg-4">
-            <div class="card h-100">
-                <img src="@Image"
-                 class="card-img-top"
-                 style="object-fit:contain; height: 250px">
+    <br>
+    <div>
+
+        @*картинка *@ 
+        <img src="@Image"
+         style="object-fit:contain; height: 250px">
+        <br>
+
+        @*Описание *@
+           @* <div style="margin-left: 10px">@description</div>*@
+    
                 
-                 @*Описание *@
-                @*<div style="margin-left: 10px">@description</div>*@
+        <p>
+            Name: @searchedMovie.Name <br>
+            <br>
+            Rating:  @searchedMovie.Rating <br>
+            <br>
+            Actors:
+            @if (searchedMovie.Actors != null)
+            {
+                @foreach(var actor in searchedMovie.Actors)
+                {
+                    <div>
+                        <a @onclick="() => GetMoviesFromPerson(actor.Name)">@actor.Name</a>
+                    </div>
+                }
+            }
+            <br>
+            Director:
+            @if (searchedMovie.Directors != null)
+            {
+                @foreach (var director in searchedMovie.Directors)
+                {
+                    <div>
+                        <a @onclick="() => GetMoviesFromPerson(director.Name) ">@director.Name</a>
+                    </div>
+                }
+             }
+             <br>
+                Tags:
+                @if (searchedMovie.Tags != null)
+                {
+                    @foreach (var tag in searchedMovie.Tags)
+                    {
+                        <div>
+                            <a @onclick="() => GetMoviesFromTag(tag.Name)">@tag.Name</a>
+                        </div>
+                    }
+                }
+                        
+        </p>
+    </div>
 
-                <div type="div" class="card-body">
-                    <p type="textP" class="card-text" align="left">
-                        Rating:  @searchedMovie.Rating <br>
-                        <br>
-
-                        @*Вывод Актеров*@
-                        Actors:
-                        @if (searchedMovie.Actors != null)
-                        {
-                            @foreach(var actor in searchedMovie.Actors)
-                            {
-                                <div>
-                                    <a @onclick="() => GetMoviesFromPerson(actor.Name)">@actor.Name</a>
-                                </div>
-                            }
-                        }
-                        @*Вывод Режиссеров*@
-                        Director:
-                        @if (searchedMovie.Directors != null)
-                        {
-                            @foreach (var director in searchedMovie.Directors)
-                            {
-                                <div>
-                                    <a @onclick="() => GetMoviesFromPerson(director.Name) ">@director.Name</a>
-                                </div>
-                            }
-                        }
-                        @*Вывод Тегов*@
-                        Tags:
-                        @if (searchedMovie.Tags != null)
-                        {
-                            @foreach (var tag in searchedMovie.Tags)
-                            {
-                                <div>
-                                    <a @onclick="() => GetMoviesFromTag(tag.Name)">@tag.Name</a>
-                                </div>
-                            }
-                        }
-                    </p>
-                </div>
-            </div>
-        </div>
          @*<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
 
             @foreach (var simTitle in searchedMovie.top.Split(','))
@@ -91,68 +90,105 @@
             }
         </div>*@
 }
-@if (isActor)
+@if (isPerson)
 {
-    <div style="margin-bottom: 40px" class="col col-lg-4">
-            <div class="card h-100">
-                <img src="@Image"
-                 class="card-img-top"
-                 style="object-fit:contain; height: 250px">
+    <div>
+        <img src="@Image"
+         style="object-fit:contain; height: 250px">
+        <br>
         Movies:
         @foreach(var mov in searchedMovies)
         {
             <div>
-                <a @onclick="() => ActivateGetInfo(mov.Name)">@mov.Name</a>
+                <a @onclick="() => GetInfoAboutMovie(mov.Name)">@mov.Name</a>
             </div>
         }
-        </div>
-        </div>
+    </div>
 }
+
 @if(isTag)
 {
-    <div style="margin-bottom: 40px" class="col col-lg-4">
+    <div>
         Movies:
         @foreach(var mov in searchedMovies)
         {
             <div>
-                <a @onclick="() => ActivateGetInfo(mov.Name)">@mov.Name</a>
+                <a @onclick="() => GetInfoAboutMovie(mov.Name)">@mov.Name</a>
             </div>
         }
-        </div>
+    </div>
 }
 
 
 @code {
 
-    public string item = "hello";
-    //найденный фильм
+    public string item = "1922";
     public Movie_bd searchedMovie;
     public List<Movie_bd> searchedMovies;
     public bool isMovie = false;
-    public bool isActor = false;
+    public bool isPerson = false;
     public bool isTag = false;
-    public string ttconstSearchedMovie;
     public string Image;
+
     private async Task FindMovie(string movieTitle)
     {
         isMovie = true;
         searchedMovie = Service.GetMovie(movieTitle);
-        await GetImage(searchedMovie.Name);
+        await GetImage(searchedMovie.Name.Replace(" ", "%20"));
     }
+
+    public async Task FindPerson()
+    {
+        await GetMoviesFromPerson(item);
+    }
+
+    public async Task FindTag(string name)
+    {
+        searchedMovies = Service.GetMoviesFromTag(name);
+        isMovie = false;
+        isTag = true;
+        isPerson = false;
+    }
+
+    public async Task GetMoviesFromPerson(string name)
+    {
+        await GetImage(name);
+   
+        searchedMovies = Service.GetMoviesFromActor(name);
+        isMovie = false;
+        isTag = false;
+        isPerson = true;
+    }
+    public async Task GetMoviesFromTag(string name)
+    {
+        searchedMovies = Service.GetMoviesFromTag(name);
+        isMovie = false;
+        isTag = true;
+        isPerson = false;
+    }
+
+    public async Task GetInfoAboutMovie(string movieTitle)
+    {
+        await FindMovie(movieTitle);
+        isMovie = true;
+        isTag = false;
+        isPerson = false;
+    }
+
     public async Task GetImage(string name)
     {
-        var titleName = name.Replace(" ", "%20");
-        var client = new HttpClient();
-        var request = new HttpRequestMessage
-     {
-        Method = HttpMethod.Get,
-        RequestUri = new Uri("https://imdb8.p.rapidapi.com/auto-complete?q=" + titleName),
-        Headers =
+        HttpClient client = new HttpClient();
+        HttpRequestMessage request = new HttpRequestMessage
         {
-        { "X-RapidAPI-Key", "8e0034607bmsh42995f12352d9adp11775ajsn3eaa5bcea365" },
-        { "X-RapidAPI-Host", "imdb8.p.rapidapi.com" },
-        },
+            Method = HttpMethod.Get,
+            RequestUri = new Uri("https://imdb8.p.rapidapi.com/auto-complete?q=" + name),
+            Headers =
+            {
+                { "X-RapidAPI-Key", "8e0034607bmsh42995f12352d9adp11775ajsn3eaa5bcea365" },
+                { "X-RapidAPI-Host", "imdb8.p.rapidapi.com" },
+            },
         };
+
         using (var response = await client.SendAsync(request))
         {
             var body = await response.Content.ReadAsStringAsync();
@@ -161,77 +197,11 @@
                 int startIndex = body.IndexOf("https");
                 int endIndex = body.IndexOf("width", startIndex);
                 Image = body.Substring(startIndex, (endIndex - startIndex) - 3);
-                ttconstSearchedMovie = body.Substring(body.IndexOf("id\":\"") + 5, 9);
             }
             catch
             {
-                Image = "https://wonder-day.com/wp-content/uploads/2020/10/wonder-day-among-us-png-29.png";
+                Image = "https://i.ytimg.com/vi/j3cdcH9uZtI/maxresdefault.jpg";
             }
         }
-    }
-    public async Task FindActor()
-    {
-        await GetMoviesFromPerson(item);
-    }
-    private void FindDirector()
-    {
-    }
-
-    public async Task FindTag(string name)
-    {
-        searchedMovies = Service.GetMoviesFromTag(name);
-        isMovie = false;
-        isTag = true;
-        isActor = false;
-    }
-
-    private void FindTop()
-    {
-    }
-    public async Task GetMoviesFromPerson(string name)
-    {
-       
-        var client = new HttpClient();
-        var request = new HttpRequestMessage
-     {
-        Method = HttpMethod.Get,
-        RequestUri = new Uri("https://imdb8.p.rapidapi.com/auto-complete?q=" + name),
-        Headers =
-        {
-        { "X-RapidAPI-Key", "8e0034607bmsh42995f12352d9adp11775ajsn3eaa5bcea365" },
-        { "X-RapidAPI-Host", "imdb8.p.rapidapi.com" },
-        },
-        };
-        using (var response = await client.SendAsync(request))
-        {
-            response.EnsureSuccessStatusCode();
-            var body = await response.Content.ReadAsStringAsync();
-            var actorId = body.Substring(body.IndexOf("nm"), 9);
-            int startIndex = body.IndexOf("https");
-            int endIndex = body.IndexOf("width", startIndex);
-            Image = body.Substring(startIndex, (endIndex - startIndex) - 3);
-        }
-        {
-        
-    }
-    
-        searchedMovies = Service.GetMoviesFromActor(name);
-         isMovie = false;
-        isTag = false;
-        isActor = true;
-    }
-    public async Task GetMoviesFromTag(string name)
-    {
-        searchedMovies = Service.GetMoviesFromTag(name);
-        isMovie = false;
-        isTag = true;
-        isActor = false;
-    }
-    public async Task ActivateGetInfo(string movieTitle)
-    {
-        await FindMovie(movieTitle);
-        isMovie = true;
-        isTag = false;
-        isActor = false;
     }
 }
