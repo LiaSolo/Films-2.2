@@ -11,12 +11,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<ApplicationContext>(options => 
 options.UseNpgsql(builder.Configuration.GetConnectionString("info")));
-builder.Services.AddDbContext<ApplicationContext>(options =>
+builder.Services.AddDbContext<ApplicationContext2>(options =>
 options.UseNpgsql(builder.Configuration.GetConnectionString("top")));
 
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddScoped<ApplicationService>();
 var app = builder.Build();
 
