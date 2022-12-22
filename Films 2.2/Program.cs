@@ -284,7 +284,6 @@ void Make_top()
                 .Include(m => m.Actors)
                 .Include(m => m.Directors)
                 .Include(m => m.Tags)
-                .Include(m => m.Top10)
                 .Where(m => m.Name == movie.Name).ToList();
 
         movies[0].Top10 = ans;
