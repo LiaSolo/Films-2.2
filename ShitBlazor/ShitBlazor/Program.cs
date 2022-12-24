@@ -11,8 +11,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<ApplicationContext>(options => 
 options.UseNpgsql(builder.Configuration.GetConnectionString("info")));
-builder.Services.AddDbContext<ApplicationContext2>(options =>
-options.UseNpgsql(builder.Configuration.GetConnectionString("top")));
 
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();

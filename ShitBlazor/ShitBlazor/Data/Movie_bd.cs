@@ -16,6 +16,8 @@ namespace ShitBlazor.Data
         public HashSet<Director> Directors { get; set; }
         public string Rating { get; set; }
 
+        public string[]? Top10 { get; set; }
+
         //public HashSet<Movie_bd> Top { get; set; }
 
         public static double Relevance(Movie_bd movie1, Movie_bd movie2)

@@ -12,232 +12,244 @@
 <h1>Введите что-нибудь</h1>
 
 <div>
-    <input @bind-value="@item" />
-    <p>Значение переменной: @item</p>
+	<input @bind-value="@item" />
+	<p>Значение переменной: @item</p>
 
-    <button class="btn btn-primary" @onclick=" () => FindMovie(item)">Movie</button>
-    <button class="btn btn-primary" @onclick="FindPerson">Person</button>
-    <button class="btn btn-primary" @onclick="() => FindTag(item)">Tag</button>
+	<button class="btn btn-primary" @onclick=" () => FindMovie(item)">Movie</button>
+	<button class="btn btn-primary" @onclick="FindPerson">Person</button>
+	<button class="btn btn-primary" @onclick="() => FindTag(item)">Tag</button>
 </div>
 
 
-@if(isMovie && searchedMovie != null)
+@if   (isMovie && searchedMovie != null)
 {
-    <br>
-    <div>
+	<br>
+	<div>
 
-        @*картинка *@ 
-        <img src="@Image"
-         style="object-fit:contain; height: 250px">
-        <br>
+		@*картинка *@
+		<img src="@Image"
+		 style="object-fit:contain; height: 250px">
+		<br>
 
-        <p>
-            Описание:
-            <div style="margin-left: 10px">@description</div>
-            <br>
-            Name: @searchedMovie.Name <br>
-            <br>
-            Rating:  @searchedMovie.Rating <br>
-            <br>
-            Actors:
-            @if (searchedMovie.Actors != null)
-            {
-                @foreach(var actor in searchedMovie.Actors)
-                {
-                    <div>
-                        <a @onclick="() => GetMoviesFromPerson(actor.Name)">@actor.Name</a>
-                    </div>
-                }
-            }
-            <br>
-            Director:
-            @if (searchedMovie.Directors != null)
-            {
-                @foreach (var director in searchedMovie.Directors)
-                {
-                    <div>
-                        <a @onclick="() => GetMoviesFromPerson(director.Name) ">@director.Name</a>
-                    </div>
-                }
-            }
-            <br>
-            Tags:
-            @if (searchedMovie.Tags != null)
-            {
-                @foreach (var tag in searchedMovie.Tags)
-                {
-                    <div>
-                        <a @onclick="() => GetMoviesFromTag(tag.Name)">@tag.Name</a>
-                    </div>
-                }
-            }
-            <br>
-            Top-10:
-            @foreach(var mov in topMovies)
-            {
-                <div>
-                    <a @onclick="() => GetMovieInfo(mov.Name)">@mov.Name</a>
-                </div>
-            }
-                        
-        </p>
-    </div>
+		<p>
+			Описание:
+			<div style="margin-left: 10px">@description</div>
+			<br>
+			Name: @searchedMovie.Name <br>
+			<br>
+			Rating:  @searchedMovie.Rating <br>
+			<br>
+			Actors:
+			@if (searchedMovie.Actors != null)
+			{
+				@foreach   (var actor in searchedMovie.Actors)
+				{
+					<div>
+						<a @onclick="() => GetMoviesFromPerson(actor.Name)">@actor.Name</a>
+					</div>
+				}
+			}
+			<br>
+			Director:
+			@if (searchedMovie.Directors != null)
+			{
+				@foreach (var director in searchedMovie.Directors)
+				{
+					<div>
+						<a @onclick="() => GetMoviesFromPerson(director.Name) ">@director.Name</a>
+					</div>
+				}
+			}
+			<br>
+			Top-10:
+			@foreach   (var mov in searchedMovie.Top10)
+			{
+				<div>
+					<a @onclick="() => GetMovieInfo(mov)">@mov</a>
+				</div>
+			}
+			<br>
+			Tags:
+			@if (searchedMovie.Tags != null)
+			{
+				@foreach (var tag in searchedMovie.Tags)
+				{
+					<div>
+						<a @onclick="() => GetMoviesFromTag(tag.Name)">@tag.Name</a>
+					</div>
+				}
+			}
+
+
+		</p>
+	</div>
 }
 @if (isPerson)
 {
-    <div>
-        <img src="@Image"
-         style="object-fit:contain; height: 250px">
-        <br>
-        Movies:
-        @foreach(var mov in searchedMovies)
-        {
-            <div>
-                <a @onclick="() => GetMovieInfo(mov.Name)">@mov.Name</a>
-            </div>
-        }
-    </div>
+	<div>
+		<img src="@Image"
+		 style="object-fit:contain; height: 250px">
+		<br>
+		Name: @thisPerson
+		<br>
+		Movies:
+		@foreach   (var mov in searchedMovies)
+		{
+			<div>
+				<a @onclick="() => GetMovieInfo(mov.Name)">@mov.Name</a>
+			</div>
+		}
+	</div>
 }
 
-@if(isTag)
+@if   (isTag)
 {
-    <div>
-        Movies:
-        @foreach(var mov in searchedMovies)
-        {
-            <div>
-                <a @onclick="() => GetMovieInfo(mov.Name)">@mov.Name</a>
-            </div>
-        }
-    </div>
+	<div>
+		Name: @thisTag
+		<br>
+		Movies:
+		@foreach   (var mov in searchedMovies)
+		{
+			<div>
+				<a @onclick="() => GetMovieInfo(mov.Name)">@mov.Name</a>
+			</div>
+		}
+	</div>
 }
 
 
-            @code {
+@code {
 
-                public string item = "1922";
-            public Movie_bd searchedMovie;
-            public List<Movie_bd> searchedMovies;
-            public List<Movie_bd> topMovies;
-            public bool isMovie = false;
-            public bool isPerson = false;
-            public bool isTag = false;
-            public string Image;
-            public bool isHasDescription = false;
-            public string description;
-            public string movieCode;
+	public string item = "1922";
+	public Movie_bd searchedMovie;
+	public List<Movie_bd> searchedMovies;
+	public string thisPerson;
+	public string thisTag;
+	//public List<Movie_bd> topMovies;
+	public bool isMovie = false;
+	public bool isPerson = false;
+	public bool isTag = false;
+	public string Image;
+	public bool isHasDescription = false;
+	public string description;
+	public string movieCode;
 
-            private async Task FindMovie(string movieTitle)
-            {
-                isMovie = true;
-                isPerson = false;
-                isTag = false;
-                searchedMovie = Service.GetMovie(movieTitle);
-                topMovies = Service.GetTop10(movieTitle);
-                await GetImage(searchedMovie.Name.Replace(" ", "%20"));
-            }
+	private async Task FindMovie(string movieTitle)
+	{
+		isMovie = true;
+		isPerson = false;
+		isTag = false;
+		searchedMovie = Service.GetMovie(movieTitle);
+		//topMovies = Service.GetTop10(movieTitle);
+		await GetImage(searchedMovie.Name.Replace(" ", "%20"));
+		await GetDescription();
+	}
 
-            public async Task FindPerson()
-            {
-                await GetMoviesFromPerson(item);
-            }
+	public async Task FindPerson()
+	{
+		thisPerson = item;
+		await GetMoviesFromPerson(item);
+	}
 
-            public async Task FindTag(string name)
-            {
-                searchedMovies = Service.GetMoviesFromTag(name);
-                isMovie = false;
-                isTag = true;
-                isPerson = false;
-            }
+	public async Task FindTag(string name)
+	{
+		thisTag = item;
+		searchedMovies = Service.GetMoviesFromTag(name);
+		isMovie = false;
+		isTag = true;
+		isPerson = false;
+	}
 
-            public async Task GetMoviesFromPerson(string name)
-            {
-                await GetImage(name);
+	public async Task GetMoviesFromPerson(string name)
+	{
+		await GetImage(name);
+		await GetDescription();
 
-                searchedMovies = Service.GetMoviesFromPerson(name);
-                isMovie = false;
-                isTag = false;
-                isPerson = true;
-            }
-            public async Task GetMoviesFromTag(string name)
-            {
-                searchedMovies = Service.GetMoviesFromTag(name);
-                isMovie = false;
-                isTag = true;
-                isPerson = false;
-            }
+		thisPerson = name;
+		searchedMovies = Service.GetMoviesFromPerson(name);
+		isMovie = false;
+		isTag = false;
+		isPerson = true;
+	}
+	public async Task GetMoviesFromTag(string name)
+	{
+		thisTag = name;
+		searchedMovies = Service.GetMoviesFromTag(name);
+		isMovie = false;
+		isTag = true;
+		isPerson = false;
+	}
 
-            public async Task GetMovieInfo(string movieTitle)
-            {
-                await FindMovie(movieTitle);
-                isMovie = true;
-                isTag = false;
-                isPerson = false;
-            }
+	public async Task GetMovieInfo(string movieTitle)
+	{
+		await FindMovie(movieTitle);
+		isMovie = true;
+		isTag = false;
+		isPerson = false;
+	}
 
-            public async Task GetImage(string name)
-            {
-                HttpClient client = new HttpClient();
-                HttpRequestMessage request = new HttpRequestMessage
-                {
-                    Method = HttpMethod.Get,
-                    RequestUri = new Uri("https://imdb8.p.rapidapi.com/auto-complete?q=" + name),
-                    Headers =
-                    {
+	public async Task GetImage(string name)
+	{
+		HttpClient client = new HttpClient();
+		HttpRequestMessage request = new HttpRequestMessage
+			{
+				Method = HttpMethod.Get,
+				RequestUri = new Uri("https://online-movie-database.p.rapidapi.com/auto-complete?q=" + name),
+				Headers =
+					{
                         { "X-RapidAPI-Key", "f6798a1675msh6ba65cc134bcaacp1a1242jsn944bbf57eedf" },
-                        { "X-RapidAPI-Host", "imdb8.p.rapidapi.com" },
-                    },
-                };
+                        { "X-RapidAPI-Host", "online-movie-database.p.rapidapi.com" },
+					},
+			};
 
-                using (var response = await client.SendAsync(request))
-                {
-                    var body = await response.Content.ReadAsStringAsync();
-                    try
-                    {
-                        int startIndex = body.IndexOf("https");
-                        int endIndex = body.IndexOf("width", startIndex);
-                        Image = body.Substring(startIndex, (endIndex - startIndex) - 3);
-                    }
-                    catch
-                    {
-                        Image = "https://i.ytimg.com/vi/j3cdcH9uZtI/maxresdefault.jpg";
-                    }
+		using (var response = await client.SendAsync(request))
+		{
+			string body = await response.Content.ReadAsStringAsync();
+			try
+			{
+				int startIndex = body.IndexOf("https");
+				int endIndex = body.IndexOf("width");
+				Image = body.Substring(startIndex, endIndex - startIndex - 3);
+			}
+			catch
+			{
+				Image = "https://i.ytimg.com/vi/j3cdcH9uZtI/maxresdefault.jpg";
+			}
 
-                    if (isMovie)
-                    {
-                        movieCode = body.Substring(body.IndexOf("id\":\"") + 5, 9);
-                    }
-                }
-            }
+			if (isMovie)
+			{
+				movieCode = body.Substring(body.IndexOf("id\":\"") + 5, 9);
+			}
+		}
+	}
 
-    public async Task  GetDescription()
-    {
-        isHasDescription = true;
-        var client = new HttpClient();
-        var request = new HttpRequestMessage
-            {
-                Method = HttpMethod.Get,
-                RequestUri = new Uri("https://imdb8.p.rapidapi.com/title/get-synopses?tconst=" + movieCode),
-                Headers =
-                {
-                    { "X-RapidAPI-Key", "f6798a1675msh6ba65cc134bcaacp1a1242jsn944bbf57eedf" },
-                    { "X-RapidAPI-Host", "imdb8.p.rapidapi.com" },
-                },
-            };
-        using (var response = await client.SendAsync(request))
-        {
-            response.EnsureSuccessStatusCode();
-            var body = await response.Content.ReadAsStringAsync();
-            try
-            {
-                var index = body.IndexOf("text");
-                var indent = 7;
-                description = body.Substring(index + indent,body.Length - index - indent - 3).Replace("\\\"", "\"");
-            }
-            catch
-            {
-                description = "Описания фильма не найдено :(";
-            }
-        }
-    }
+	public async Task GetDescription()
+	{
+		//isHasDescription = true;
+		var client = new HttpClient();
+		var request = new HttpRequestMessage
+			{
+				Method = HttpMethod.Get,
+				RequestUri = new Uri("https://online-movie-database.p.rapidapi.com/title/get-synopses?tconst=" + movieCode),
+				Headers =
+				{
+					{ "X-RapidAPI-Key", "f6798a1675msh6ba65cc134bcaacp1a1242jsn944bbf57eedf" },
+					{ "X-RapidAPI-Host", "online-movie-database.p.rapidapi.com" },
+				},
+			};
+		using (var response = await client.SendAsync(request))
+		{
+			response.EnsureSuccessStatusCode();
+			string body = await response.Content.ReadAsStringAsync();
+			try
+			{
+				var index = body.IndexOf("text");
+				description = body.Substring(index + 7,   body.Length  - index - 10);
+			}
+			catch
+			{
+				description = "Описания фильма не найдено :(";
+			}
+		}
+	}
 }
